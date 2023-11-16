@@ -1,5 +1,5 @@
 from flask import Flask, jsonify
-# from google.cloud import firestore
+from google.cloud import firestore
 # from google.oauth2.service_account import Credentials
 # import os
 
@@ -50,9 +50,11 @@ def get_events():
       events_ref = db.collection('eventos').stream()
       for event in events_ref:
           event_data = event.to_dict()
+
           for key,value in event_data.items():
             if isinstance(value, firestore.DocumentReference):
                 event_data[key] = value.id
+
           events.append(event_data)
       return jsonify({'eventos': events}), 200
   except Exception as error: 
