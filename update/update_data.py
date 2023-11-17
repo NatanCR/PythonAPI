@@ -163,3 +163,54 @@ def increment_votes():
     except Exception as error:
         print(f"Erro ao incrementar votos: {error}")
         return jsonify({"error": f"Erro ao incrementar votos: {str(error)}"}), 500
+    
+# MOVER EVENTO ATUAL PARA EVENTOS PASSADOS E LIMPAR EVENTO ATUAL
+@app.route('/move_to_previous_event', methods=['POST'])
+def move_to_previous_event():
+    try:
+        # Obtenha o documento 'AllEvents'
+        all_events_ref = db.collection('AllEvents').document('all_events')
+        all_events_doc = all_events_ref.get()
+
+        if not all_events_doc.exists:
+            return jsonify({"error": "Documento AllEvents não encontrado"}), 404
+
+        # Obtenha o 'currentEvent' do documento 'AllEvents'
+        current_event = all_events_doc.to_dict().get('currentEvent')
+
+        if not current_event:
+            return jsonify({"error": "currentEvent não encontrado em AllEvents"}), 404
+
+        # Atualize 'previousEvent' adicionando 'currentEvent' ao array
+        all_events_ref.update({"previousEvent": firestore.ArrayUnion([current_event])})
+
+        # Limpe 'currentEvent' definindo-o como None
+        all_events_ref.update({"currentEvent": None})
+
+        return jsonify({"message": "currentEvent movido para previousEvent em AllEvents com sucesso!"})
+
+    except Exception as error:
+        print(f"Erro ao mover currentEvent para previousEvent: {error}")
+        return jsonify({"error": f"Erro ao mover currentEvent para previousEvent: {str(error)}"}), 500
+
+# ATUALIZAR EVENTO ATUAL POR COMPLETO 
+@app.route('/update_current_event', methods=['POST'])
+def update_current_event():
+    try:
+        # Obtenha os dados do currentEvent a partir do corpo da solicitação
+        current_event_data = request.json
+
+        if not current_event_data:
+            return jsonify({"error": "Dados do currentEvent ausentes"}), 400
+
+        # Obtenha a referência do documento 'AllEvents'
+        all_events_ref = db.collection('AllEvents').document('all_events')
+
+        # Atualize o campo 'currentEvent' com os novos dados
+        all_events_ref.update({"currentEvent": current_event_data})
+
+        return jsonify({"message": "currentEvent atualizado com sucesso!"})
+
+    except Exception as error:
+        print(f"Erro ao atualizar currentEvent: {error}")
+        return jsonify({"error": f"Erro ao atualizar currentEvent: {str(error)}"}), 500
