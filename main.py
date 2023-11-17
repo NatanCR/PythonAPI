@@ -1,9 +1,7 @@
-from flask import Flask, jsonify, request, render_template, redirect
-import pyrebase
-import json
+from flask import Flask, jsonify
 import firebase_admin
 from firebase_admin import credentials
-from firebase_admin import firestore, auth
+from firebase_admin import firestore
 
 
 cred = credentials.Certificate("service_firebase.json")
