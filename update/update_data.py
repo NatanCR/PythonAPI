@@ -40,3 +40,5 @@ def add_wallet_value():
       except Exception as error:
             print(f"Erro ao atualizar wallet: {error}")
             return jsonify({"error": f"Erro ao atualizar wallet: {str(error)}"}), 500
+      
+# 

@@ -19,48 +19,37 @@ app = Flask(__name__)
 # db = firestore.Client(credentials=credentials)
 # inicializando o firestore com a credencial
 
-
-# Rota para obter dados de usuários
-@app.route('/get_users', methods=['GET'])
-def get_users():
+# ADICIONAR MEMBRO NO EVENTO 
+@app.route('/add_event_member', methods=['POST'])
+def add_event_member():
     try:
-        users = []
+        # Obtenha os dados do membro a partir do corpo da solicitação
+        member_data = {
+            "id": "Natan",  
+            "name": "Natan",
+            "financeMember": True
+        }
 
-        # Obtém todos os documentos da coleção 'usuarios'
-        users_ref = db.collection('usuarios').stream()
-        for user in users_ref:
-            # Converte o documento para um dicionário
-            user_data = user.to_dict()
-            # Verifica se há campos que são referências a outros documentos
-            for key, value in user_data.items():
-                if isinstance(value, firestore.DocumentReference):
-                    # Se for uma referência, substitua pelo ID do documento referenciado
-                    user_data[key] = value.id
-            users.append(user_data)
-        return jsonify({'usuarios': users}), 200
+        if not member_data:
+            return jsonify({"error": "Dados do membro ausentes"}), 400
+
+        member_id = member_data.get('id')
+
+        # Adicione o membro a 'Members' na coleção 'currentEvent' em 'AllEvents'
+        current_event_ref = db.collection('CurrentEvent').document('currentEvent').get().reference
+
+        if current_event_ref:
+            db.collection('Members').document(member_id).set(member_data)
+            current_event_ref.update({"eventMembers": firestore.ArrayUnion([db.document(f'Members/{member_id}')])})
+
+            return jsonify({"message": f"Membro {member_id} adicionado a currentEvent com sucesso!"})
+        else:
+            return jsonify({"error": "currentEvent não encontrado"}), 404
+
     except Exception as error:
-        print(f"Error occured while searching for users: {error}")
-        return jsonify({'error': 'Error occurred while searching for users'}), 500
+        print(f"Erro ao adicionar novo membro: {error}")
+        return jsonify({"error": f"Erro ao adicionar novo membro: {str(error)}"}), 500
 
-#obter dados de eventos
-@app.route('/get_events', methods=['GET'])
-def get_events():
-  try: 
-      events = []
-
-      events_ref = db.collection('eventos').stream()
-      for event in events_ref:
-          event_data = event.to_dict()
-
-          for key,value in event_data.items():
-            if isinstance(value, firestore.DocumentReference):
-                event_data[key] = value.id
-
-          events.append(event_data)
-      return jsonify({'eventos': events}), 200
-  except Exception as error: 
-      print(f"Error occurred while searching for events: {error}")
-      return jsonify({'error': 'Error occurred while searching for events'}), 500
 
 if __name__ == '__main__':
    app.run(debug=True)
