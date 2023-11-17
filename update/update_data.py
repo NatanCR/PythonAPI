@@ -113,3 +113,53 @@ def add_member_to_task():
     except Exception as error:
         print(f"Erro ao adicionar membro existente à tarefa: {error}")
         return jsonify({"error": f"Erro ao adicionar membro existente à tarefa: {str(error)}"}), 500
+    
+# ADICIONAR UM VOTO NA RESPOSTA DA ENQUETE 
+@app.route('/increment_votes', methods=['POST'])
+def increment_votes():
+    try:
+        # Obtenha os IDs do quiz e da QuizAnswer a partir do corpo da solicitação
+        quiz = {
+            "id": "quiz"
+        }
+
+        answer = {
+            "id": "answerXPTO1"
+        }
+
+        quiz_id = quiz.get('id')
+        answer_id = answer.get('id')
+
+        if not quiz_id or not answer_id:
+            return jsonify({"error": "IDs ausentes"}), 400
+
+        # Suponha que você tenha o ID do quiz da solicitação
+        quiz_ref = db.collection('Quizzes').document(quiz_id).get().reference
+
+        if quiz_ref:
+            # Obtenha o documento do quiz
+            quiz_doc = quiz_ref.get().to_dict()
+
+            # Obtenha o array de opções de resposta
+            answer_options = quiz_doc.get('answerOptions', [])
+
+            # Encontre a opção de resposta correta pelo ID
+            for option in answer_options:
+                if option.get('id') == answer_id:
+                    # Incrementar o número de votos
+                    option['votes'] = option.get('votes', 0) + 1
+
+                    # Atualize o documento do quiz com a opção de resposta atualizada
+                    quiz_ref.update({"answerOptions": answer_options})
+
+                    return jsonify({"message": f"Voto incrementado para a resposta {answer_id} no quiz {quiz_id} com sucesso!"})
+
+            # Se o loop terminar sem encontrar a opção, retorne um erro
+            return jsonify({"error": f"QuizAnswer {answer_id} não encontrada no quiz {quiz_id}"}), 404
+
+        else:
+            return jsonify({"error": f"Quiz {quiz_id} não encontrado"}), 404
+
+    except Exception as error:
+        print(f"Erro ao incrementar votos: {error}")
+        return jsonify({"error": f"Erro ao incrementar votos: {str(error)}"}), 500
