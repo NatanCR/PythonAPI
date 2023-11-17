@@ -38,9 +38,9 @@ def create_event():
                 "quiz": [],
                 "finance": None,
                 "activeEvent": True,
-                "task": None,
+                "task": [],
                 "financeValidation": {"title": "Você irá participar financeiramente do evento?", "collaborators": []}
-            }
+            } 
 
             # Certifique-se de que os dados do evento não estão vazios
             if not event_data:
@@ -73,13 +73,13 @@ def create_quiz():
             # quiz_data = request.json
 
             quiz_data = {
-                  "id": "quiz1",
+                  "id": "quiz1", #gerar aleatorio 
                   "title": "Votação esporte",
                   "category": "ACTIVITIES",
                   "answerType": "UNIQUE",
                   "answerOptions": [
                         {
-                              "id": "answerXPTO1",
+                              "id": "answerXPTO1", #usar o title como id 
                               "title": "Sei la",
                               "votes": 0
                         },
@@ -110,3 +110,45 @@ def create_quiz():
       except Exception as error:
             print(f"Erro ao criar novo Quiz: {error}")
             return jsonify({"error": f"Erro ao criar novo Quiz: {str(error)}"}), 500
+      
+# CRIAR TASK 
+@app.route('/create_event_task', methods=['POST'])
+def create_event_task():
+    try:
+        # Obtenha os dados da tarefa a partir do corpo da solicitação
+        # task_data = request.json
+
+        task_data = {
+            "id": "task1",  # Gerar aleatório
+            "title": "Reunião",
+            "deadline": "2023-12-01",
+            "collaborators": [
+            #     {
+            #         "id": "member1",  # Substitua pelo ID real do colaborador
+            #         "name": "João",
+            #         "financeMember": True
+            #     }
+            ],
+            "status": "ON",
+            "icon": "meeting"
+        }
+
+        if not task_data:
+            return jsonify({"error": "Dados da tarefa ausentes"}), 400
+
+        task_id = task_data.get('id')
+
+        # Adicione a tarefa a 'EventTasks' na coleção 'currentEvent' em 'AllEvents'
+        current_event_ref = db.collection('CurrentEvent').document('currentEvent').get().reference
+
+        if current_event_ref:
+            db.collection('EventTasks').document(task_id).set(task_data)
+            current_event_ref.update({"task": firestore.ArrayUnion([db.document(f'EventTasks/{task_id}')])})
+
+            return jsonify({"message": f"Tarefa {task_id} adicionada a currentEvent com sucesso!"})
+        else:
+            return jsonify({"error": "currentEvent não encontrado"}), 404
+
+    except Exception as error:
+        print(f"Erro ao criar nova tarefa: {error}")
+        return jsonify({"error": f"Erro ao criar nova tarefa: {str(error)}"}), 500
