@@ -19,7 +19,5 @@ app = Flask(__name__)
 # db = firestore.Client(credentials=credentials)
 # inicializando o firestore com a credencial
 
-
-
 if __name__ == '__main__':
    app.run(debug=True)
