@@ -49,8 +49,8 @@ def add_event_member():
         # member_data = request.json
         
         member_data = {
-            "id": "Natan",  
-            "name": "Natan",
+            "id": "Laisla",  
+            "name": "Laisla",
             "financeMember": True
         }
 
@@ -164,7 +164,7 @@ def increment_votes():
         print(f"Erro ao incrementar votos: {error}")
         return jsonify({"error": f"Erro ao incrementar votos: {str(error)}"}), 500
     
-# MOVER EVENTO ATUAL PARA EVENTOS PASSADOS E LIMPAR EVENTO ATUAL
+# MOVER EVENTO ATUAL PARA EVENTOS PASSADOS E LIMPAR EVENTO ATUAL - PRECISA TESTAR 
 @app.route('/move_to_previous_event', methods=['POST'])
 def move_to_previous_event():
     try:
@@ -193,7 +193,7 @@ def move_to_previous_event():
         print(f"Erro ao mover currentEvent para previousEvent: {error}")
         return jsonify({"error": f"Erro ao mover currentEvent para previousEvent: {str(error)}"}), 500
 
-# ATUALIZAR EVENTO ATUAL POR COMPLETO 
+# ATUALIZAR EVENTO ATUAL POR COMPLETO - PRECISA TESTAR 
 @app.route('/update_current_event', methods=['POST'])
 def update_current_event():
     try:

@@ -57,7 +57,7 @@ def create_event():
             all_events_ref = db.collection('AllEvents').document('all_events')
 
             # Atualize o campo currentEvent com a referência ao novo evento
-            all_events_ref.update({"currentEvent": db.document(f'Eventos/{event_id}')})
+            all_events_ref.update({"currentEvent": db.document(f'CurrentEvent/{event_id}')})
 
             return jsonify({"message": f"Evento {event_id} adicionado à coleção AllEvents com sucesso!"})
      except Exception as error:
