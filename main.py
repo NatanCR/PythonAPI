@@ -1,8 +1,9 @@
 from flask import Flask, jsonify
 
+from google.cloud import firestore
 import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+from firebase_admin import credentials, firestore
+
 
 cred = credentials.Certificate("service_firebase.json")
 firebase_admin.initialize_app(cred)
@@ -10,20 +11,15 @@ db = firestore.client()
 
 app = Flask(__name__)
 
-# carregando as credenciais do JSON
-# credentials = Credentials.from_service_account_file(os.environ.get
-#                                                     ('GOOGLE_APPLICATION_CREDENTIALS'))
-# db = firestore.Client(credentials=credentials)
-# inicializando o firestore com a credencial
-
 # Rota para obter dados de usuários
-@app.route('/get_users', methods=['GET'])
+@app.route('/get_users', methods=['POST''GET'])
 def get_users():
     try:
         users = []
 
         # Obtém todos os documentos da coleção 'usuarios'
         users_ref = db.collection('usuarios').stream()
+
         for user in users_ref:
             # Converte o documento para um dicionário
             user_data = user.to_dict()
@@ -55,6 +51,7 @@ def get_events():
   except Exception as error: 
       print(f"Error occurred while searching for events: {error}")
       return jsonify({'error': 'Error occurred while searching for events'}), 500
+
 
 if __name__ == '__main__':
    app.run(debug=True)
