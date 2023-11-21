@@ -1,8 +1,14 @@
 from flask import Flask, jsonify, request
+from firebase_admin import credentials, initialize_app, auth
 import pyrebase
 import json
+import firebase_admin
 
 app = Flask(__name__)
+
+cred = credentials.Certificate("service_firebase.json") 
+firebase_admin.initialize_app(cred)
+
 
 #como registrar uma pessoa ex: /register?email=barbara@gmail.com&password=123456
 
@@ -20,7 +26,7 @@ config = {
 firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
-@app.route('/register', methods=['GET'])
+@app.route('/registerUser', methods=['GET', 'POST'])
 def register():
     email = request.args.get('email')
     password = request.args.get('password')
@@ -59,6 +65,39 @@ def register():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+@app.route('/get_authenticateUsers', methods=['GET'])
+def get_usuarios():
+    auth = firebase.auth()
+    users = []
+
+    # Example: Fetch user by UID
+    uid = 'your_user_uid'
+    user_by_uid = auth.get_account_info(uid)
+    users.append({
+        "uid": user_by_uid['users'][0]['localId'],
+        "email": user_by_uid['users'][0]['email'],
+        # Add other user properties as needed
+    })
+
+    # Example: Fetch user by email
+    email = 'user@example.com'
+    try:
+        user_by_email = auth.get_account_info(email)
+        users.append({
+            "uid": user_by_email['users'][0]['localId'],
+            "email": user_by_email['users'][0]['email'],
+            # Add other user properties as needed
+        })
+    except:
+        print(f"User with email {email} not found.")
+
+    # Save users list to JSON file
+    with open("output.json", "w") as outfile:
+        json.dump(users, outfile)
+
+    # Optionally, you can return the users as a JSON response
+    return jsonify(users)
 
 if __name__ == '__main__':
    app.run(debug=True)
