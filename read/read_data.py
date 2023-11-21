@@ -14,6 +14,7 @@ db = firestore.client()
 
 app = Flask(__name__)
 
+# TRATAR OS DADOS DO BANCO COM ISINSTANCE 
 def serialize_data(data):
     if isinstance(data, firestore.DocumentReference):
         return serialize_data(data.get().to_dict())
@@ -24,9 +25,9 @@ def serialize_data(data):
     else:
         return data
 
-# Rota para obter todas as informações do documento all_events dentro da coleção AllEvents
-@app.route('/get_all_events', methods=['GET'])
-def get_all_events():
+# PEGAR EVENTO ATUAL 
+@app.route('/get_current_event', methods=['GET'])
+def get_current_event():
     try: 
         currentEvent = []
 
@@ -40,6 +41,27 @@ def get_all_events():
             currentEvent.append(current_event_data_serialized)
 
         return jsonify({'CurrentEvent': currentEvent}), 200
+        
+    except Exception as error:
+        print(f"Error occurred while retrieving CurrentEvent: {error}")
+        return jsonify({"error": f"Erro ao obter CurrentEvent: {str(error)}"}), 500
+
+# PEGAR TABELA DE ALL EVENTS
+@app.route('/get_all_events', methods=['GET'])
+def get_all_events():
+    try: 
+        allEvents = []
+
+        all_events_ref = db.collection('AllEvents').document('all_events').get()
+        
+        if all_events_ref.exists:
+            all_events_data = all_events_ref.to_dict()
+
+            current_event_data_serialized = serialize_data(all_events_data)
+
+            allEvents.append(current_event_data_serialized)
+
+        return jsonify({'AllEvents': allEvents}), 200
         
     except Exception as error:
         print(f"Error occurred while retrieving AllEvents: {error}")
