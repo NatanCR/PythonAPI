@@ -2,10 +2,8 @@ from flask import Flask, Blueprint, jsonify
 from google.cloud import firestore
 import firebase_admin
 from firebase_admin import credentials, firestore
-from read_data import read_data_bp, serialize_data
 
 app = Flask(__name__)
-app.register_blueprint(read_data_bp)
 
 cred = credentials.Certificate("service_firebase.json")
 firebase_admin.initialize_app(cred)
