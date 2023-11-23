@@ -9,5 +9,11 @@ cred = credentials.Certificate("service_firebase.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
+
+
 if __name__ == '__main__':
    app.run(debug=True)
+
+
+
+
