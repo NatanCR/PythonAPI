@@ -186,3 +186,51 @@ def create_finance():
     except Exception as error:
         print(f"Erro ao criar nova tabela financeira: {error}")
         return jsonify({"error": f"Erro ao criar nova tabela financeira: {str(error)}"}), 500
+    
+    # CRIAR TABELA USER LOGIN 
+@app.route('/create_user_table', methods=['POST'])
+def create_user_table():
+    try:
+        # Certifique-se de que a coleção não existe antes de adicionar um documento
+        users_collection_ref = db.collection('Users')
+        if users_collection_ref.get():
+            return jsonify({"error": "A coleção de usuários já existe"}), 400
+
+        # Adicione um documento vazio à coleção para criar a coleção
+        users_collection_ref.add({})
+
+        return jsonify({"message": "Coleção de usuários criada com sucesso!"})
+
+    except Exception as error: 
+         print(f"Error ocurred while searching for events: {error}")
+         return jsonify({"error": f"Erro ao criar user: {str(error)}"}), 500
+    
+
+# CRIAR USER 
+@app.route('/create_user', methods=['POST'])
+def create_user():
+    try:
+        user_data = {
+             "id": "User1",
+             "name": "User1",
+             "email": "user1@gmail.com",
+             "password": "12345"
+        }
+
+        if not user_data:
+             return jsonify({"error": "Dados do usuário ausentes"}), 400
+
+        user_id = user_data.get('id')
+
+        users_collection_ref = db.collection('Users')
+
+        if users_collection_ref:
+            db.collection('Users').document(user_id).set(user_data)
+
+            return jsonify({"message": f"User {user_id} criado com sucesso!"})
+        else:
+            return jsonify({"error": f"Erro ao criar novo user: {str(error)}"}), 500
+    
+    except Exception as error: 
+         print(f"Error ocurred while searching for events: {error}")
+         return jsonify({"error": f"Erro ao criar user: {str(error)}"}), 500
