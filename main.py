@@ -50,7 +50,7 @@ def serialize_data(data):
         return data
 
 # PEGAR EVENTO ATUAL 
-@read_data_bp.route('/get_current_event', methods=['GET'])
+@app.route('/get_current_event', methods=['GET'])
 def get_current_event():
     try: 
         currentEvent = []
@@ -71,7 +71,7 @@ def get_current_event():
         return jsonify({"error": f"Erro ao obter CurrentEvent: {str(error)}"}), 500
 
 # PEGAR TABELA DE ALL EVENTS
-@read_data_bp.route('/get_all_events', methods=['GET'])
+@app.route('/get_all_events', methods=['GET'])
 def get_all_events():
     try: 
         allEvents = []
@@ -390,7 +390,7 @@ def create_finance():
         print(f"Erro ao criar nova tabela financeira: {error}")
         return jsonify({"error": f"Erro ao criar nova tabela financeira: {str(error)}"}), 500
     
-    # CRIAR TABELA USER LOGIN 
+ # CRIAR TABELA USER LOGIN 
 @app.route('/create_user_table', methods=['POST'])
 def create_user_table():
     try:
@@ -408,38 +408,5 @@ def create_user_table():
          print(f"Error ocurred while searching for events: {error}")
          return jsonify({"error": f"Erro ao criar user: {str(error)}"}), 500
     
-
-# CRIAR USER 
-@app.route('/create_user', methods=['POST'])
-def create_user():
-    try:
-        user_data = {
-             "id": "User1",
-             "name": "User1",
-             "email": "user1@gmail.com",
-             "password": "12345"
-        }
-
-        if not user_data:
-             return jsonify({"error": "Dados do usuário ausentes"}), 400
-
-        user_id = user_data.get('id')
-
-        users_collection_ref = db.collection('Users')
-
-        if users_collection_ref:
-            db.collection('Users').document(user_id).set(user_data)
-
-            return jsonify({"message": f"User {user_id} criado com sucesso!"})
-        else:
-            return jsonify({"error": f"Erro ao criar novo user: {str(error)}"}), 500
-    
-    except Exception as error: 
-         print(f"Error ocurred while searching for events: {error}")
-         return jsonify({"error": f"Erro ao criar user: {str(error)}"}), 500
-    
-
-
-
 if __name__ == '__main__':
    app.run(debug=True)
