@@ -121,42 +121,42 @@ def create_quiz():
         return jsonify({"error": f"Erro ao criar novo Quiz: {str(error)}"}), 500
       
 # CRIAR TASK 
-@app.route('/create_event_task', methods=['POST'])
+@app.route('/create_task', methods=['POST'])
 def create_event_task():
     try:
         # Obtenha os dados da tarefa a partir do corpo da solicitação
-        # task_data = request.json
+        task_data = request.json
 
-        task_data = {
-            "id": "task1",  # Gerar aleatório
-            "title": "Reunião",
-            "deadline": "2023-12-01",
-            "collaborators": [
-            #     {
-            #         "id": "member1",  # Substitua pelo ID real do colaborador
-            #         "name": "João",
-            #         "financeMember": True
-            #     }
-            ],
-            "status": "ON",
-            "icon": "meeting"
-        }
+        # task_data = {
+        #     "id": "task1",  # Gerar aleatório
+        #     "title": "Reunião",
+        #     "deadline": "2023-12-01",
+        #     "collaborators": [
+        #         {
+        #             "id": "member1",  # Substitua pelo ID real do colaborador
+        #             "name": "João",
+        #             "financeMember": True
+        #         }
+        #     ],
+        #     "status": "ON",
+        #     "icon": "meeting"
+        # }
 
         if not task_data:
             return jsonify({"error": "Dados da tarefa ausentes"}), 400
 
         task_id = task_data.get('id')
 
-        # Adicione a tarefa a 'EventTasks' na coleção 'currentEvent' em 'AllEvents'
-        current_event_ref = db.collection('CurrentEvent').document('currentEvent').get().reference
+        # Modifique a referência para apontar para a coleção 'AllEvents' e o documento 'AllEvents'
+        all_events_ref = db.collection('AllEvents').document('AllEvents').get().reference
 
-        if current_event_ref:
-            db.collection('EventTasks').document(task_id).set(task_data)
-            current_event_ref.update({"task": firestore.ArrayUnion([db.document(f'EventTasks/{task_id}')])})
+        if all_events_ref:
+            # Atualize o campo 'tasks' dentro de 'currentEvent' em 'AllEvents'
+            all_events_ref.update({"currentEvent.task": firestore.ArrayUnion([task_data])})
 
             return jsonify({"message": f"Tarefa {task_id} adicionada a currentEvent com sucesso!"})
         else:
-            return jsonify({"error": "currentEvent não encontrado"}), 404
+            return jsonify({"error": "AllEvents não encontrado"}), 404
 
     except Exception as error:
         print(f"Erro ao criar nova tarefa: {error}")
