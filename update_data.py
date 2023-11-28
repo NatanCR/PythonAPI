@@ -16,24 +16,24 @@ app = Flask(__name__)
 def add_wallet_value():
       try: 
            # Obtenha os dados do evento a partir do corpo da solicitação
-            # wallet_data = request.json 
+            wallet_data = request.json 
 
-            wallet_data = {
-                  "id": "wallet",
-                  "value": 0.00
-            }
+            # wallet_data = {
+            #       "id": "wallet",
+            #       "value": 0.00
+            # }
 
             walle_value = wallet_data.get('value')
 
             if not wallet_data: 
                   return jsonify({"error": "Dados da carteira ausentes"}), 400
             
-            all_events_ref = db.collection('AllEvents').document('all_events')
+            all_events_ref = db.collection('AllEvents').document('AllEvents')
             # ATUALIZA A WALLET INTEIRA 
             # all_events_ref.update({"wallet": wallet_data})
             
             # ATUALIZA O VALUE DA WALLET 
-            # all_events_ref.update({"wallet.value": walle_value})
+            all_events_ref.update({"wallet.value": walle_value})
 
             return jsonify({"message": "Wallet atualizada com sucesso"})
       
@@ -46,29 +46,29 @@ def add_wallet_value():
 def add_event_member():
     try:
         # Obtenha os dados do membro a partir do corpo da solicitação
-        # member_data = request.json
+        member_data = request.json
         
-        member_data = {
-            "id": "Laisla",  
-            "name": "Laisla",
-            "financeMember": True
-        }
+        # member_data = {
+        #     "id": "Natan",  
+        #     "name": "Natan",
+        #     "financeMember": True
+        # }
 
         if not member_data:
             return jsonify({"error": "Dados do membro ausentes"}), 400
 
         member_id = member_data.get('id')
 
-        # Adicione o membro a 'Members' na coleção 'currentEvent' em 'AllEvents'
-        current_event_ref = db.collection('CurrentEvent').document('currentEvent').get().reference
+        # Modifique a referência para apontar para a coleção 'AllEvents' e o documento 'AllEvents'
+        all_events_ref = db.collection('AllEvents').document('AllEvents').get().reference
 
-        if current_event_ref:
-            db.collection('Members').document(member_id).set(member_data)
-            current_event_ref.update({"eventMembers": firestore.ArrayUnion([db.document(f'Members/{member_id}')])})
+        if all_events_ref:
+            # Atualize o campo 'eventMembers' dentro de 'currentEvent' em 'AllEvents'
+            all_events_ref.update({"currentEvent.eventMembers": firestore.ArrayUnion([member_data])})
 
             return jsonify({"message": f"Membro {member_id} adicionado a currentEvent com sucesso!"})
         else:
-            return jsonify({"error": "currentEvent não encontrado"}), 404
+            return jsonify({"error": "AllEvents não encontrado"}), 404
 
     except Exception as error:
         print(f"Erro ao adicionar novo membro: {error}")
@@ -164,7 +164,7 @@ def increment_votes():
         print(f"Erro ao incrementar votos: {error}")
         return jsonify({"error": f"Erro ao incrementar votos: {str(error)}"}), 500
     
-# MOVER EVENTO ATUAL PARA EVENTOS PASSADOS E LIMPAR EVENTO ATUAL - PRECISA TESTAR 
+# MOVER EVENTO ATUAL PARA EVENTOS PASSADOS E LIMPAR EVENTO ATUAL
 @app.route('/move_to_previous_event', methods=['POST'])
 def move_to_previous_event():
     try:
@@ -193,7 +193,7 @@ def move_to_previous_event():
         print(f"Erro ao mover currentEvent para previousEvent: {error}")
         return jsonify({"error": f"Erro ao mover currentEvent para previousEvent: {str(error)}"}), 500
 
-# ATUALIZAR EVENTO ATUAL POR COMPLETO - PRECISA TESTAR 
+# ATUALIZAR EVENTO ATUAL POR COMPLETO
 @app.route('/update_current_event', methods=['POST'])
 def update_current_event():
     try:
@@ -204,7 +204,7 @@ def update_current_event():
             return jsonify({"error": "Dados do currentEvent ausentes"}), 400
 
         # Obtenha a referência do documento 'AllEvents'
-        all_events_ref = db.collection('AllEvents').document('all_events')
+        all_events_ref = db.collection('AllEvents').document('AllEvents')
 
         # Atualize o campo 'currentEvent' com os novos dados
         all_events_ref.update({"currentEvent": current_event_data})

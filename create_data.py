@@ -14,15 +14,24 @@ app = Flask(__name__)
 # CRIAR A TABELA ALL EVENTS 
 @app.route('/create_all_events_table', methods=['POST'])
 def create_all_events(): 
-     all_events_data = {
-        "currentEvent": None,
-        "previousEvent": [],
-        "wallet": {"id": None, "value": None},
-        "users": []
-    }
-     
-     db.collection('AllEvents').document('all_events').set(all_events_data)
-     return jsonify({"message": "Collection succesfull created"})
+    try:
+        all_events_data = request.json
+        # all_events_data = {
+        #     "currentEvent": None,
+        #     "previousEvent": [],
+        #     "wallet": {"id": None, "value": None},
+        #     "users": []
+        # }
+        if not all_events_data:
+            return jsonify({"error": "Dados de allEvents ausentes"})
+        all_events_data_id = all_events_data.get('id')
+            
+        db.collection('AllEvents').document(all_events_data_id).set(all_events_data)
+        return jsonify({"message": "Collection succesfull created"})
+    except Exception as error:
+            print(f"Error occurred while searching for events: {error}")
+            return jsonify({"error": f"Erro ao criar tabela: {str(error)}"}), 500
+
 
 # CRIAR UM EVENTO EM CURRENT EVENT 
 @app.route('/create_event', methods=['POST'])
@@ -205,18 +214,19 @@ def create_user_table():
     except Exception as error: 
          print(f"Error ocurred while searching for events: {error}")
          return jsonify({"error": f"Erro ao criar user: {str(error)}"}), 500
-    
+     
 
-# CRIAR USER 
+    # CRIAR USER 
 @app.route('/create_user', methods=['POST'])
 def create_user():
     try:
-        user_data = {
-             "id": "User1",
-             "name": "User1",
-             "email": "user1@gmail.com",
-             "password": "12345"
-        }
+        # user_data = {
+        #      "id": "User1",
+        #      "name": "User1",
+        #      "email": "user1@gmail.com",
+        #      "password": "12345"
+        # }
+        user_data = request.json
 
         if not user_data:
              return jsonify({"error": "Dados do usuário ausentes"}), 400
