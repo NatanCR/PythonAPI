@@ -74,7 +74,7 @@ def add_event_member():
         print(f"Erro ao adicionar novo membro: {error}")
         return jsonify({"error": f"Erro ao adicionar novo membro: {str(error)}"}), 500
     
-# ADICIONAR MEMBRO EXISTENTE NA TASK 
+# ADICIONAR MEMBRO EXISTENTE NA TASK - testar 
 @app.route('/add_member_to_task', methods=['POST'])
 def add_member_to_task():
     try:
@@ -114,7 +114,7 @@ def add_member_to_task():
         print(f"Erro ao adicionar membro existente à tarefa: {error}")
         return jsonify({"error": f"Erro ao adicionar membro existente à tarefa: {str(error)}"}), 500
     
-# ADICIONAR UM VOTO NA RESPOSTA DA ENQUETE 
+# ADICIONAR UM VOTO NA RESPOSTA DA ENQUETE - testar 
 @app.route('/increment_votes', methods=['POST'])
 def increment_votes():
     try:

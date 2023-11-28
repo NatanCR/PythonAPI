@@ -33,7 +33,7 @@ def create_all_events():
             return jsonify({"error": f"Erro ao criar tabela: {str(error)}"}), 500
 
 
-# CRIAR UM EVENTO EM CURRENT EVENT 
+# CRIAR UM EVENTO EM CURRENT EVENT - NAO ESTOU USANDO 
 @app.route('/create_event', methods=['POST'])
 def create_event():
      try:
@@ -77,48 +77,48 @@ def create_event():
 # CRIAR ENQUETE 
 @app.route('/create_quiz', methods=['POST'])
 def create_quiz():
-      try: 
-            # Obtenha os dados do evento a partir do corpo da solicitação
-            # quiz_data = request.json
+    try:
+        # Obtenha os dados do quiz a partir do corpo da solicitação
+        quiz_data = request.json
 
-            quiz_data = {
-                  "id": "quiz1", #gerar aleatorio 
-                  "title": "Votação esporte",
-                  "category": "ACTIVITIES",
-                  "answerType": "UNIQUE",
-                  "answerOptions": [
-                        {
-                              "id": "answerXPTO1", #usar o title como id 
-                              "title": "Sei la",
-                              "votes": 0
-                        },
-                        {
-                              "id": "answerXPTO2",
-                              "title": "Nao sei",
-                              "votes": 0
-                        },
-                  ]
-            }
+        # quiz_data = {
+        #     "id": "quiz1", #gerar aleatorio 
+        #     "title": "Votação esporte",
+        #     "category": "ACTIVITIES",
+        #     "answerType": "UNIQUE",
+        #     "answerOptions": [
+        #         {
+        #             "id": "answerXPTO1", #usar o title como id 
+        #             "title": "Sei la",
+        #             "votes": 0
+        #         },
+        #         {
+        #             "id": "answerXPTO2",
+        #             "title": "Nao sei",
+        #             "votes": 0
+        #         },
+        #     ]
+        # }
 
-            if not quiz_data: 
-                  return jsonify({"error": "Dados do quiz ausentes"}), 400
-            
-            quiz_id = quiz_data.get('id')
+        if not quiz_data:
+            return jsonify({"error": "Dados do quiz ausentes"}), 400
 
-            # Adicione o Quiz a 'Quizzes' na coleção 'currentEvent' em 'AllEvents'
-            current_event_ref = db.collection('CurrentEvent').document('currentEvent').get().reference
+        quiz_id = quiz_data.get('id')
 
-            if current_event_ref:
-                db.collection('Quizzes').document(quiz_id).set(quiz_data)
-                current_event_ref.update({"quiz": firestore.ArrayUnion([db.document(f'Quizzes/{quiz_id}')])})
+        # Modifique a referência para apontar para a coleção 'AllEvents' e o documento 'AllEvents'
+        all_events_ref = db.collection('AllEvents').document('AllEvents').get().reference
 
-                return jsonify({"message": f"Quiz {quiz_id} adicionado a currentEvent com sucesso!"})
-            else:
-                return jsonify({"error": "currentEvent não encontrado"}), 404
+        if all_events_ref:
+            # Atualize o campo 'quizzes' dentro de 'currentEvent' em 'AllEvents'
+            all_events_ref.update({"currentEvent.quiz": firestore.ArrayUnion([quiz_data])})
 
-      except Exception as error:
-            print(f"Erro ao criar novo Quiz: {error}")
-            return jsonify({"error": f"Erro ao criar novo Quiz: {str(error)}"}), 500
+            return jsonify({"message": f"Quiz {quiz_id} adicionado a currentEvent com sucesso!"})
+        else:
+            return jsonify({"error": "AllEvents não encontrado"}), 404
+
+    except Exception as error:
+        print(f"Erro ao criar novo Quiz: {error}")
+        return jsonify({"error": f"Erro ao criar novo Quiz: {str(error)}"}), 500
       
 # CRIAR TASK 
 @app.route('/create_event_task', methods=['POST'])
@@ -197,7 +197,7 @@ def create_finance():
         print(f"Erro ao criar nova tabela financeira: {error}")
         return jsonify({"error": f"Erro ao criar nova tabela financeira: {str(error)}"}), 500
     
-    # CRIAR TABELA USER LOGIN 
+# CRIAR TABELA USER LOGIN 
 @app.route('/create_user_table', methods=['POST'])
 def create_user_table():
     try:
@@ -216,7 +216,7 @@ def create_user_table():
          return jsonify({"error": f"Erro ao criar user: {str(error)}"}), 500
      
 
-    # CRIAR USER 
+# CRIAR USER 
 @app.route('/create_user', methods=['POST'])
 def create_user():
     try:
