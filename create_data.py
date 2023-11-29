@@ -34,44 +34,44 @@ def create_all_events():
 
 
 # CRIAR UM EVENTO EM CURRENT EVENT - NAO ESTOU USANDO 
-@app.route('/create_event', methods=['POST'])
-def create_event():
-     try:
-            # Obtenha os dados do evento a partir do corpo da solicitação
-            # event_data = request.json
-            event_data = {
-                "id": "currentEvent",
-                "eventName": "Primeiro Integration",
-                "eventDate": "15/02/2024",
-                "eventMembers": [],
-                "quiz": [],
-                "finance": None,
-                "activeEvent": True,
-                "task": [],
-                "financeValidation": {"title": "Você irá participar financeiramente do evento?", "collaborators": []}
-            } 
+# @app.route('/create_event', methods=['POST'])
+# def create_event():
+#      try:
+#             # Obtenha os dados do evento a partir do corpo da solicitação
+#             # event_data = request.json
+#             event_data = {
+#                 "id": "currentEvent",
+#                 "eventName": "Primeiro Integration",
+#                 "eventDate": "15/02/2024",
+#                 "eventMembers": [],
+#                 "quiz": [],
+#                 "finance": None,
+#                 "activeEvent": True,
+#                 "task": [],
+#                 "financeValidation": {"title": "Você irá participar financeiramente do evento?", "collaborators": []}
+#             } 
 
-            # Certifique-se de que os dados do evento não estão vazios
-            if not event_data:
-                return jsonify({"error": "Dados do evento ausentes"}), 400
+#             # Certifique-se de que os dados do evento não estão vazios
+#             if not event_data:
+#                 return jsonify({"error": "Dados do evento ausentes"}), 400
 
-            # Gere um ID único para o evento
-            # evento_id = "currentEvent"
-            event_id = event_data.get('id')
+#             # Gere um ID único para o evento
+#             # evento_id = "currentEvent"
+#             event_id = event_data.get('id')
 
-            # Adicione o evento à coleção 'AllEvents'
-            db.collection('CurrentEvent').document(event_id).set(event_data)
+#             # Adicione o evento à coleção 'AllEvents'
+#             db.collection('CurrentEvent').document(event_id).set(event_data)
 
-            # Obtenha a referência do documento AllEvents
-            all_events_ref = db.collection('AllEvents').document('all_events')
+#             # Obtenha a referência do documento AllEvents
+#             all_events_ref = db.collection('AllEvents').document('all_events')
 
-            # Atualize o campo currentEvent com a referência ao novo evento
-            all_events_ref.update({"currentEvent": db.document(f'CurrentEvent/{event_id}')})
+#             # Atualize o campo currentEvent com a referência ao novo evento
+#             all_events_ref.update({"currentEvent": db.document(f'CurrentEvent/{event_id}')})
 
-            return jsonify({"message": f"Evento {event_id} adicionado à coleção AllEvents com sucesso!"})
-     except Exception as error:
-            print(f"Error occurred while searching for events: {error}")
-            return jsonify({"error": f"Erro ao adicionar evento: {str(error)}"}), 500
+#             return jsonify({"message": f"Evento {event_id} adicionado à coleção AllEvents com sucesso!"})
+#      except Exception as error:
+#             print(f"Error occurred while searching for events: {error}")
+#             return jsonify({"error": f"Erro ao adicionar evento: {str(error)}"}), 500
       
 
 # CRIAR ENQUETE 
@@ -167,31 +167,31 @@ def create_event_task():
 def create_finance():
     try:
         # Obtenha os dados da tabela financeira a partir do corpo da solicitação
-        # finance_data = request.json
+        finance_data = request.json
 
-        finance_data = {
-            "id": "finance1",  # Gerar aleatório
-            "title": "Orçamento Geral",
-            "deadline": "2023-12-31",
-            "totalValue": 10000.0,
-            "valueMembers": None
-        }
+        # finance_data = {
+        #     "id": "finance1",  # Gerar aleatório
+        #     "title": "Orçamento Geral",
+        #     "deadline": "2023-12-31",
+        #     "totalValue": 10000.0,
+        #     "valueMembers": None
+        # }
 
         if not finance_data:
             return jsonify({"error": "Dados da tabela financeira ausentes"}), 400
 
         finance_id = finance_data.get('id')
 
-        # Adicione a tabela financeira a 'Finances' na coleção 'currentEvent' em 'AllEvents'
-        current_event_ref = db.collection('CurrentEvent').document('currentEvent').get().reference
+        # Modifique a referência para apontar para a coleção 'AllEvents' e o documento 'AllEvents'
+        all_events_ref = db.collection('AllEvents').document('AllEvents').get().reference
 
-        if current_event_ref:
-            db.collection('Finances').document(finance_id).set(finance_data)
-            current_event_ref.update({"finance": firestore.ArrayUnion([db.document(f'Finances/{finance_id}')])})
+        if all_events_ref:
+            # Atualize o campo 'finances' dentro de 'currentEvent' em 'AllEvents'
+            all_events_ref.update({"currentEvent.finances": firestore.ArrayUnion([finance_data])})
 
             return jsonify({"message": f"Tabela financeira {finance_id} adicionada a currentEvent com sucesso!"})
         else:
-            return jsonify({"error": "currentEvent não encontrado"}), 404
+            return jsonify({"error": "AllEvents não encontrado"}), 404
 
     except Exception as error:
         print(f"Erro ao criar nova tabela financeira: {error}")

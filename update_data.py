@@ -74,95 +74,92 @@ def add_event_member():
         print(f"Erro ao adicionar novo membro: {error}")
         return jsonify({"error": f"Erro ao adicionar novo membro: {str(error)}"}), 500
     
-# ADICIONAR MEMBRO EXISTENTE NA TASK - testar 
+# ADICIONAR MEMBRO EXISTENTE NA TASK 
 @app.route('/add_member_to_task', methods=['POST'])
-def add_member_to_task():
+def add_collaborator_to_task():
     try:
-        # Obtenha o ID do membro a partir do corpo da solicitação
-        # member_id = request.json.get('id')
-        member_data = {
-            "id": "Gui",  
-            "name": "Gui",
-            "financeMember": True
-        }
-        member_id = member_data.get('id')
+        # Obtenha os dados da solicitação
+        request_data = request.json
 
-        if not member_id:
-            return jsonify({"error": "ID do membro ausente"}), 400
+        # Verifique se o ID da task e o novo colaborador estão presentes nos dados da solicitação
+        if not request_data or 'id' not in request_data or 'member' not in request_data:
+            return jsonify({"error": "Dados inválidos na solicitação"}), 400
 
-        # Suponha que você tenha o ID da tarefa da solicitação (substitua 'task1' pelo ID real da tarefa)
-        # task_id = request.json.get('id', 'task1')
-        task = {
-            "id": "task1"
-        }
-        task_id = task.get('id')
+        # Obtenha o ID da task e o novo colaborador da solicitação
+        task_id = request_data['id']
+        new_collaborator = request_data['member']
 
-        # Adicione o membro existente à lista de colaboradores na tarefa específica
-        task_ref = db.collection('EventTasks').document(task_id).get().reference
-        if task_ref:
-            member_ref = db.collection('Members').document(member_id).get().reference
-            if member_ref:
-                task_ref.update({"collaborators": firestore.ArrayUnion([member_ref])})
+        # Obtenha a referência do documento 'AllEvents'
+        all_events_ref = db.collection('AllEvents').document('AllEvents')
 
-                return jsonify({"message": f"Membro {member_id} adicionado à tarefa {task_id} com sucesso!"})
-            else:
-                return jsonify({"error": f"Membro {member_id} não encontrado"}), 404
-        else:
-            return jsonify({"error": f"Tarefa {task_id} não encontrada"}), 404
+        # Obtenha os dados atuais do 'AllEvents'
+        all_events_data = all_events_ref.get().to_dict()
+
+        # Encontre a task correspondente pelo ID
+        task_to_update = next((task for task in all_events_data['currentEvent']['task'] if task['id'] == task_id), None)
+
+        if not task_to_update:
+            return jsonify({"error": f"Tarefa com ID {task_id} não encontrada"}), 404
+
+        # Adicione o novo colaborador ao array 'collaborators' dentro da task
+        task_to_update['collaborators'].append(new_collaborator)
+
+        # Atualize o documento 'AllEvents' com os dados atualizados
+        all_events_ref.update({"currentEvent": all_events_data['currentEvent']})
+
+        return jsonify({"message": "Novo colaborador adicionado com sucesso!"})
 
     except Exception as error:
-        print(f"Erro ao adicionar membro existente à tarefa: {error}")
-        return jsonify({"error": f"Erro ao adicionar membro existente à tarefa: {str(error)}"}), 500
+        print(f"Erro ao adicionar novo colaborador à task: {error}")
+        return jsonify({"error": f"Erro ao adicionar novo colaborador à task: {str(error)}"}), 500
     
-# ADICIONAR UM VOTO NA RESPOSTA DA ENQUETE - testar 
-@app.route('/increment_votes', methods=['POST'])
-def increment_votes():
+# ADICIONAR UM VOTO NA RESPOSTA DA ENQUETE - testar
+@app.route('/increment_vote', methods=['POST'])
+def increment_vote():
     try:
-        # Obtenha os IDs do quiz e da QuizAnswer a partir do corpo da solicitação
-        quiz = {
-            "id": "quiz"
-        }
+        # Obtenha os dados da solicitação
+        request_data = request.json
 
-        answer = {
-            "id": "answerXPTO1"
-        }
+        # Verifique se o ID do quiz, o ID da opção e o novo número de votos estão presentes nos dados da solicitação
+        if not request_data or 'id' not in request_data or 'optionId' not in request_data:
+            return jsonify({"error": "Dados inválidos na solicitação"}), 400
 
-        quiz_id = quiz.get('id')
-        answer_id = answer.get('id')
+        # Obtenha o ID do quiz, o ID da opção e o novo número de votos da solicitação
+        quiz_id = request_data['id']
+        option_id = request_data['optionId']
 
-        if not quiz_id or not answer_id:
-            return jsonify({"error": "IDs ausentes"}), 400
+        # Obtenha a referência do documento 'AllEvents'
+        all_events_ref = db.collection('AllEvents').document('AllEvents')
 
-        # Suponha que você tenha o ID do quiz da solicitação
-        quiz_ref = db.collection('Quizzes').document(quiz_id).get().reference
+        # Obtenha os dados atuais do 'AllEvents'
+        all_events_data = all_events_ref.get().to_dict()
 
-        if quiz_ref:
-            # Obtenha o documento do quiz
-            quiz_doc = quiz_ref.get().to_dict()
+        # Encontre o quiz correspondente pelo ID
+        quiz_to_update = next((quiz for quiz in all_events_data['currentEvent']['quiz'] if quiz['id'] == quiz_id), None)
 
-            # Obtenha o array de opções de resposta
-            answer_options = quiz_doc.get('answerOptions', [])
+        if not quiz_to_update:
+            return jsonify({"error": f"Quiz com ID {quiz_id} não encontrado"}), 404
 
-            # Encontre a opção de resposta correta pelo ID
-            for option in answer_options:
-                if option.get('id') == answer_id:
-                    # Incrementar o número de votos
-                    option['votes'] = option.get('votes', 0) + 1
+        # Encontre a opção correspondente pelo ID dentro do quiz
+        option_to_update = next((option for option in quiz_to_update['answerOptions'] if option['optionId'] == option_id), None)
 
-                    # Atualize o documento do quiz com a opção de resposta atualizada
-                    quiz_ref.update({"answerOptions": answer_options})
+        if not option_to_update:
+            return jsonify({"error": f"Opção com ID {option_id} não encontrada no quiz {quiz_id}"}), 404
 
-                    return jsonify({"message": f"Voto incrementado para a resposta {answer_id} no quiz {quiz_id} com sucesso!"})
+        # Incrementar o número de votos para a opção específica
+        option_to_update['votes'] += 1
 
-            # Se o loop terminar sem encontrar a opção, retorne um erro
-            return jsonify({"error": f"QuizAnswer {answer_id} não encontrada no quiz {quiz_id}"}), 404
+        # Atualize apenas o campo 'votes' da opção específica
+        all_events_ref.update({
+            "currentEvent.quiz": all_events_data['currentEvent']['quiz']
+        })
 
-        else:
-            return jsonify({"error": f"Quiz {quiz_id} não encontrado"}), 404
+        return jsonify({"message": "Voto incrementado com sucesso!"})
 
     except Exception as error:
-        print(f"Erro ao incrementar votos: {error}")
-        return jsonify({"error": f"Erro ao incrementar votos: {str(error)}"}), 500
+        print(f"Erro ao incrementar voto: {error}")
+        return jsonify({"error": f"Erro ao incrementar voto: {str(error)}"}), 500
+    
     
 # MOVER EVENTO ATUAL PARA EVENTOS PASSADOS E LIMPAR EVENTO ATUAL
 @app.route('/move_to_previous_event', methods=['POST'])

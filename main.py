@@ -92,51 +92,6 @@ def update_current_event():
         return jsonify({"error": f"Erro ao atualizar currentEvent: {str(error)}"}), 500
 
 
-
-
-
-
-
-      
-
-
-# CRIAR FINANCEIRO
-@app.route('/create_finance', methods=['POST'])
-def create_finance():
-    try:
-        # Obtenha os dados da tabela financeira a partir do corpo da solicitação
-        # finance_data = request.json
-
-        finance_data = {
-            "id": "finance1",  # Gerar aleatório
-            "title": "Orçamento Geral",
-            "deadline": "2023-12-31",
-            "totalValue": 10000.0,
-            "valueMembers": None
-        }
-
-        if not finance_data:
-            return jsonify({"error": "Dados da tabela financeira ausentes"}), 400
-
-        finance_id = finance_data.get('id')
-
-        # Adicione a tabela financeira a 'Finances' na coleção 'currentEvent' em 'AllEvents'
-        current_event_ref = db.collection('CurrentEvent').document('currentEvent').get().reference
-
-        if current_event_ref:
-            db.collection('Finances').document(finance_id).set(finance_data)
-            current_event_ref.update({"finance": firestore.ArrayUnion([db.document(f'Finances/{finance_id}')])})
-
-            return jsonify({"message": f"Tabela financeira {finance_id} adicionada a currentEvent com sucesso!"})
-        else:
-            return jsonify({"error": "currentEvent não encontrado"}), 404
-
-    except Exception as error:
-        print(f"Erro ao criar nova tabela financeira: {error}")
-        return jsonify({"error": f"Erro ao criar nova tabela financeira: {str(error)}"}), 500
-
-
-
 if __name__ == '__main__':
    app.run(debug=True)
 
