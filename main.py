@@ -9,6 +9,17 @@ cred = credentials.Certificate("service_firebase.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
+# TRATAR OS DADOS DO BANCO COM ISINSTANCE 
+def serialize_data(data):
+    if isinstance(data, firestore.DocumentReference):
+        return serialize_data(data.get().to_dict())
+    elif isinstance(data, dict):
+        return {key: serialize_data(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [serialize_data(item) for item in data]
+    else:
+        return data
+
 # CRIAR USER 
 @app.route('/create_user', methods=['POST'])
 def create_user():
@@ -38,16 +49,7 @@ def create_user():
          print(f"Error ocurred while searching for events: {error}")
          return jsonify({"error": f"Erro ao criar user: {str(error)}"}), 500
     
-# TRATAR OS DADOS DO BANCO COM ISINSTANCE 
-def serialize_data(data):
-    if isinstance(data, firestore.DocumentReference):
-        return serialize_data(data.get().to_dict())
-    elif isinstance(data, dict):
-        return {key: serialize_data(value) for key, value in data.items()}
-    elif isinstance(data, list):
-        return [serialize_data(item) for item in data]
-    else:
-        return data
+
 
 # PEGAR EVENTO ATUAL 
 @app.route('/get_current_event', methods=['GET'])
@@ -55,14 +57,18 @@ def get_current_event():
     try: 
         currentEvent = []
 
-        current_event_ref = db.collection('CurrentEvent').document('currentEvent').get()
+        # Modificar a referência para apontar para a coleção AllEvents e o documento AllEvents
+        all_events_ref = db.collection('AllEvents').document('AllEvents').get()
         
-        if current_event_ref.exists:
-            current_event_data = current_event_ref.to_dict()
+        if all_events_ref.exists:
+            all_events_data = all_events_ref.to_dict()
 
-            current_event_data_serialized = serialize_data(current_event_data)
+            # Acessar o campo currentEvent diretamente
+            current_event_data = all_events_data.get('currentEvent')
 
-            currentEvent.append(current_event_data_serialized)
+            if current_event_data:
+                current_event_data_serialized = serialize_data(current_event_data)
+                currentEvent.append(current_event_data_serialized)
 
         return jsonify({'CurrentEvent': currentEvent}), 200
         
@@ -76,7 +82,7 @@ def get_all_events():
     try: 
         allEvents = []
 
-        all_events_ref = db.collection('AllEvents').document('all_events').get()
+        all_events_ref = db.collection('AllEvents').document('AllEvents').get()
         
         if all_events_ref.exists:
             all_events_data = all_events_ref.to_dict()
