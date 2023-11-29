@@ -31,14 +31,18 @@ def get_current_event():
     try: 
         currentEvent = []
 
-        current_event_ref = db.collection('CurrentEvent').document('currentEvent').get()
+        # Modificar a referência para apontar para a coleção AllEvents e o documento AllEvents
+        all_events_ref = db.collection('AllEvents').document('AllEvents').get()
         
-        if current_event_ref.exists:
-            current_event_data = current_event_ref.to_dict()
+        if all_events_ref.exists:
+            all_events_data = all_events_ref.to_dict()
 
-            current_event_data_serialized = serialize_data(current_event_data)
+            # Acessar o campo currentEvent diretamente
+            current_event_data = all_events_data.get('currentEvent')
 
-            currentEvent.append(current_event_data_serialized)
+            if current_event_data:
+                current_event_data_serialized = serialize_data(current_event_data)
+                currentEvent.append(current_event_data_serialized)
 
         return jsonify({'CurrentEvent': currentEvent}), 200
         
@@ -46,13 +50,14 @@ def get_current_event():
         print(f"Error occurred while retrieving CurrentEvent: {error}")
         return jsonify({"error": f"Erro ao obter CurrentEvent: {str(error)}"}), 500
 
+
 # PEGAR TABELA DE ALL EVENTS
 @app.route('/get_all_events', methods=['GET'])
 def get_all_events():
     try: 
         allEvents = []
 
-        all_events_ref = db.collection('AllEvents').document('all_events').get()
+        all_events_ref = db.collection('AllEvents').document('AllEvents').get()
         
         if all_events_ref.exists:
             all_events_data = all_events_ref.to_dict()
