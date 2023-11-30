@@ -28,8 +28,6 @@ def serialize_data(data):
 @app.route('/get_current_event', methods=['GET'])
 def get_current_event():
     try: 
-        currentEvent = []
-
         # Modificar a referência para apontar para a coleção AllEvents e o documento AllEvents
         all_events_ref = db.collection('AllEvents').document('AllEvents').get()
         
@@ -41,9 +39,9 @@ def get_current_event():
 
             if current_event_data:
                 current_event_data_serialized = serialize_data(current_event_data)
-                currentEvent.append(current_event_data_serialized)
+                return jsonify({'CurrentEvent': current_event_data_serialized}), 200
 
-        return jsonify({'CurrentEvent': currentEvent}), 200
+        return jsonify({"error": "Nenhum evento atual encontrado"}), 404
         
     except Exception as error:
         print(f"Error occurred while retrieving CurrentEvent: {error}")
