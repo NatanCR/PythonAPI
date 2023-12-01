@@ -551,14 +551,13 @@ def add_member_to_finance_validation():
     try:
         # Obtenha os dados da solicitação
         request_data = request.json
-        print(f"Dados da solicitação: {request_data}")
 
         # Verifique se o ID do evento e o novo membro estão presentes nos dados da solicitação
         if not request_data or 'id' not in request_data or 'member' not in request_data:
             return jsonify({"error": "Dados inválidos na solicitação"}), 400
 
         # Obtenha o ID do evento e o novo membro da solicitação
-        validation_id = request_data['id']
+        event_id = request_data['id']
         new_member = request_data['member']
 
         # Obtenha a referência do documento 'AllEvents'
@@ -567,22 +566,22 @@ def add_member_to_finance_validation():
         # Obtenha os dados atuais do 'AllEvents'
         all_events_data = all_events_ref.get().to_dict()
 
-        # Encontre o evento correspondente pelo ID
-        event_to_update = next((validation for validation in all_events_data['currentEvent']['financeValidation'] if validation['id'] == validation_id), None)
+        # Obtenha o evento correspondente pelo ID
+        event_to_update = all_events_data['currentEvent']
 
-        if not event_to_update:
-            return jsonify({"error": f"Evento com ID {validation_id} não encontrado"}), 404
+        # Verifique se o evento possui a chave 'financeValidation'
+        if 'financeValidation' not in event_to_update:
+            return jsonify({"error": "financeValidation não encontrada no evento"}), 404
 
-        # Certifique-se de que event_to_update seja tratado como um dicionário
-        event_to_update = dict(event_to_update)
+        # Certifique-se de que 'collaborators' está presente em 'financeValidation'
+        if 'collaborators' not in event_to_update['financeValidation']:
+            event_to_update['financeValidation']['collaborators'] = []
 
         # Adicione o novo membro ao array 'collaborators' dentro de 'financeValidation'
         event_to_update['financeValidation']['collaborators'].append(new_member)
 
         # Atualize o documento 'AllEvents' com os dados atualizados
-        all_events_ref.update({"currentEvent.financeValidation.collaborators": event_to_update['financeValidation']['collaborators']})
-
-
+        all_events_ref.update({"currentEvent": event_to_update})
 
         return jsonify({"message": "Novo membro adicionado à financeValidation com sucesso!"})
 
