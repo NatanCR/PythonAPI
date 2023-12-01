@@ -545,6 +545,50 @@ def add_collaborator_to_task():
         print(f"Erro ao adicionar novo colaborador à task: {error}")
         return jsonify({"error": f"Erro ao adicionar novo colaborador à task: {str(error)}"}), 500
     
+# ADICIONAR MEMBRO NA VOTAÇAO DO FINANCEIRO
+@app.route('/add_member_to_finance_validation', methods=['POST'])
+def add_member_to_finance_validation():
+    try:
+        # Obtenha os dados da solicitação
+        request_data = request.json
+        print(f"Dados da solicitação: {request_data}")
+
+        # Verifique se o ID do evento e o novo membro estão presentes nos dados da solicitação
+        if not request_data or 'id' not in request_data or 'member' not in request_data:
+            return jsonify({"error": "Dados inválidos na solicitação"}), 400
+
+        # Obtenha o ID do evento e o novo membro da solicitação
+        validation_id = request_data['id']
+        new_member = request_data['member']
+
+        # Obtenha a referência do documento 'AllEvents'
+        all_events_ref = db.collection('AllEvents').document('AllEvents')
+
+        # Obtenha os dados atuais do 'AllEvents'
+        all_events_data = all_events_ref.get().to_dict()
+
+        # Encontre o evento correspondente pelo ID
+        event_to_update = next((validation for validation in all_events_data['currentEvent']['financeValidation'] if validation['id'] == validation_id), None)
+
+        if not event_to_update:
+            return jsonify({"error": f"Evento com ID {validation_id} não encontrado"}), 404
+
+        # Certifique-se de que event_to_update seja tratado como um dicionário
+        event_to_update = dict(event_to_update)
+
+        # Adicione o novo membro ao array 'collaborators' dentro de 'financeValidation'
+        event_to_update['financeValidation']['collaborators'].append(new_member)
+
+        # Atualize o documento 'AllEvents' com os dados atualizados
+        all_events_ref.update({"currentEvent.financeValidation.collaborators": event_to_update['financeValidation']['collaborators']})
+
+
+
+        return jsonify({"message": "Novo membro adicionado à financeValidation com sucesso!"})
+
+    except Exception as error:
+        print(f"Erro ao adicionar novo membro à financeValidation: {error}")
+        return jsonify({"error": f"Erro ao adicionar novo membro à financeValidation: {str(error)}"}), 500
     
 # ADICIONAR UM VOTO NA RESPOSTA DA ENQUETE - testar
 @app.route('/increment_vote', methods=['POST'])
