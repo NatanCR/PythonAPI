@@ -280,7 +280,7 @@ def create_finance():
 
         if all_events_ref:
             # Atualize o campo 'finances' dentro de 'currentEvent' em 'AllEvents'
-            all_events_ref.update({"currentEvent.finances": firestore.ArrayUnion([finance_data])})
+            all_events_ref.update({"currentEvent.finance": firestore.ArrayUnion([finance_data])})
 
             return jsonify({"message": f"Tabela financeira {finance_id} adicionada a currentEvent com sucesso!"})
         else:
