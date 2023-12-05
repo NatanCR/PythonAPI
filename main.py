@@ -641,7 +641,7 @@ def increment_vote():
 def move_to_previous_event():
     try:
         # Obtenha o documento 'AllEvents'
-        all_events_ref = db.collection('AllEvents').document('all_events')
+        all_events_ref = db.collection('AllEvents').document('AllEvents')
         all_events_doc = all_events_ref.get()
 
         if not all_events_doc.exists:
