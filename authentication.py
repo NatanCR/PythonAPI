@@ -26,7 +26,38 @@ config = {
 firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
-@app.route('/registerUser', methods=['GET', 'POST'])
+# http://127.0.0.1:5000/login?email=leozin@gmail.com&password=123456
+
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        data = request.get_json()
+        email = data.get("email")
+        password = data.get("password")
+        print(f"Email: {email}, Password: {password}")
+
+        try:
+            # Tenta realizar o login usando o Firebase Authentication
+            user = auth.sign_in_with_email_and_password(email, password)
+            print(user)
+
+            # Se o login for bem-sucedido, o código chegou até aqui sem lançar uma exceção
+
+            response = {"message": "Usuario logou"}
+        except auth.AuthError as e:
+            # Captura exceções específicas do Firebase Authentication
+            error_message = str(e)
+            response = {"message": f"Não rolou o login: {error_message}"}
+    else:
+        response = {"message": "Método não é suportado para esta rota."}
+
+    return jsonify(response)
+
+
+
+
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     email = request.args.get('email')
     password = request.args.get('password')
@@ -66,38 +97,38 @@ def register():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/get_authenticateUsers', methods=['GET'])
-def get_usuarios():
-    auth = firebase.auth()
-    users = []
+# @app.route('/get_authenticateUsers', methods=['GET'])
+# def get_usuarios():
+#     auth = firebase.auth()
+#     users = []
 
-    # Example: Fetch user by UID
-    uid = 'your_user_uid'
-    user_by_uid = auth.get_account_info(uid)
-    users.append({
-        "uid": user_by_uid['users'][0]['localId'],
-        "email": user_by_uid['users'][0]['email'],
-        # Add other user properties as needed
-    })
+#     # Example: Fetch user by UID
+#     uid = 'your_user_uid'
+#     user_by_uid = auth.get_account_info(uid)
+#     users.append({
+#         "uid": user_by_uid['users'][0]['localId'],
+#         "email": user_by_uid['users'][0]['email'],
+#         # Add other user properties as needed
+#     })
 
-    # Example: Fetch user by email
-    email = 'user@example.com'
-    try:
-        user_by_email = auth.get_account_info(email)
-        users.append({
-            "uid": user_by_email['users'][0]['localId'],
-            "email": user_by_email['users'][0]['email'],
-            # Add other user properties as needed
-        })
-    except:
-        print(f"User with email {email} not found.")
+#     # Example: Fetch user by email
+#     email = 'user@example.com'
+#     try:
+#         user_by_email = auth.get_account_info(email)
+#         users.append({
+#             "uid": user_by_email['users'][0]['localId'],
+#             "email": user_by_email['users'][0]['email'],
+#             # Add other user properties as needed
+#         })
+#     except:
+#         print(f"User with email {email} not found.")
 
-    # Save users list to JSON file
-    with open("output.json", "w") as outfile:
-        json.dump(users, outfile)
+#     # Save users list to JSON file
+#     with open("output.json", "w") as outfile:
+#         json.dump(users, outfile)
 
-    # Optionally, you can return the users as a JSON response
-    return jsonify(users)
+#     # Optionally, you can return the users as a JSON response
+#     return jsonify(users)
 
 if __name__ == '__main__':
    app.run(debug=True)
