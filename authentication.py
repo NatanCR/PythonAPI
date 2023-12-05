@@ -43,18 +43,15 @@ def login():
             print(user)
 
             # Se o login for bem-sucedido, o código chegou até aqui sem lançar uma exceção
-
-            response = {"message": "Usuario logou"}
+            response = {"status": "success", "message": "Usuário logou"}
         except auth.AuthError as e:
             # Captura exceções específicas do Firebase Authentication
             error_message = str(e)
-            response = {"message": f"Não rolou o login: {error_message}"}
+            response = {"status": "error", "message": f"Não rolou o login: {error_message}"}
     else:
-        response = {"message": "Método não é suportado para esta rota."}
+        response = {"status": "error", "message": "Método não é suportado para esta rota."}
 
     return jsonify(response)
-
-
 
 
 @app.route('/register', methods=['GET', 'POST'])
